@@ -21,8 +21,8 @@ def encodeLab(tab):
 
 def decodeLab(lab):    
     tab = [["" for j in range(lab["ncolumns"])] for i in range(lab["nlines"])]
-    for i in range(len(t)):
-        for j in range(len(t[i])):
+    for i in range(len(tab)):
+        for j in range(len(tab[i])):
             if (i-1, j) in lab[(i, j)]:
                 tab[i][j] += 'h'
             if (i, j+1) in lab[(i, j)]:
@@ -31,7 +31,7 @@ def decodeLab(lab):
                 tab[i][j] += 'b'
             if (i, j-1) in lab[(i, j)]:
                 tab[i][j] += 'g'
-    return t
+    return tab
 
 
 #---Misc---#
@@ -372,3 +372,77 @@ def generateLab(nlines, ncolumns, method=genExplore):
     return method(nlines, ncolumns)
 
 
+def base4(n):
+    out = ""
+    while n>=1:
+        out = str(n%4) + out
+        n = n // 4
+    return out 
+
+def bidouiller(lab, plan):
+    baselab = {"nlines" : lab["nlines"], "ncolumns" : lab["ncolumns"]}
+    for k in lab.keys():
+        if type(k) != type(""):
+            baselab[k] = lab[k].copy()
+            
+    for i in range(len(plan)):
+        line = i//(baselab["ncolumns"] - 1)
+        column = i%(baselab["ncolumns"] - 1)
+        if plan[i]=="0": #le mur reste à la verticale, comme sur la fourche
+            continue 
+            
+        elif plan[i]=="1": #le mur tombe à l'horizontale sur la droite, ou disparaît / se confond avec un mur déjà présent
+            baselab[(line, column)] += [(line, column+1)]
+            baselab[(line, column+1)] += [(line, column)]
+            if (line+1, column+1) in baselab[(line, column+1)]:
+                baselab[(line, column+1)].remove((line+1, column+1))
+                baselab[(line+1, column+1)].remove((line, column+1))
+            else:
+                return None #s'il se morfond ce n'est pas un labyrinthe propre
+                
+        elif plan[i]=="2": #le mur descend d'un cran, ou disparaît / se confond avec un mur déjà présent
+            baselab[(line, column)] += [(line, column+1)]
+            baselab[(line, column+1)] += [(line, column)]
+            if (line+1, column+1) in baselab[(line+1, column)]:
+                baselab[(line+1, column)].remove((line+1, column+1))
+                baselab[(line+1, column+1)].remove((line+1, column))
+            else:
+                return None #s'il se morfond ce n'est pas un labyrinthe propre
+            
+        else: #le mur tombe à l'horizontale sur la gauche, ou disparaît / se confond avec un mur déjà présent
+            baselab[(line, column)] += [(line, column+1)]
+            baselab[(line, column+1)] += [(line, column)]
+            if (line+1, column) in baselab[(line, column)]:
+                baselab[(line, column)].remove((line+1, column))
+                baselab[(line+1, column)].remove((line, column))
+            else:
+                return None #s'il se morfond ce n'est pas un labyrinthe propre
+            
+    return baselab
+
+def allmazing(nlines, ncolumns):
+    baselab = {"nlines" : nlines, "ncolumns" : ncolumns} #le premier labyrinthe est une fourche dents vers le haut
+    for i in range(nlines):
+        for j in range(ncolumns):
+             baselab[(i, j)] = []
+    for i in range(nlines):
+        for j in range(ncolumns):
+            if i+1 < nlines:
+                baselab[(i+1, j)] += [(i, j)]
+                baselab[(i, j)] += [(i+1, j)]
+            if i+1==nlines and j+1<ncolumns:
+                baselab[(i, j+1)] += [(i, j)]
+                baselab[(i, j)] += [(i, j+1)]
+
+    allmazes = [baselab]            
+    
+    nwalls = (nlines - 1)*(ncolumns - 1)
+    for n in range(1, 4**nwalls):
+        plan = base4(n)
+        delta = len(base4(4**nwalls - 1)) - len(plan)
+        for i in range(delta):
+            plan = "0" + plan
+        new = bidouiller(baselab, plan)
+        if new!=None:
+            allmazes += [new]
+    return allmazes
