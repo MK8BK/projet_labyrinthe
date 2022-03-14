@@ -1,4 +1,13 @@
+# -*- coding: utf-8 -*-
 # ---Encoding/decoding---#
+
+def empty_lab(n, m):
+    lab = {"nlines":m, "ncolumns":n}
+    for x in range(n):
+        for y in range(m):
+            lab[(y, x)] = []
+    return lab
+
 
 def encodeLab(tab):
     lab = {}
@@ -34,7 +43,7 @@ def decodeLab(lab):
     return t
 
 
-#---Misc---#
+# ---Misc---#
 
 def adjacent(cell, size=None): #size = [nlines, ncolumns] pour éviter de renvoyer des cellules hors labyrinthe
     if size==None:
@@ -88,7 +97,7 @@ def reverse_lab(lab):
         lab[key] = l
     return lab
 
-#---Check---#
+# ---Check---#
 
 def is_well_defined(lab):
     keys = lab.keys()
@@ -121,7 +130,7 @@ def is_true_lab(lab):
     return True
 
 
-#---Generation---#
+# ---Generation---#
 
 def get_bin_list(n, nmax):
     if n == 0:
@@ -133,7 +142,7 @@ def get_bin_list(n, nmax):
     while len(digits) < len(bin(nmax))-3:
         digits.insert(0,0)
     return digits
-    
+
             
 
 def generate_pseudo_lab(ncolumns, nlines):
@@ -240,7 +249,7 @@ def genMerge(nlines, ncolumns):
         lab[cell] += [chosen]
         lab[chosen] += [cell]
         nwalls -= 1
-        
+
 def genDumb(nlines, ncolumns):
     lab = {"nlines" : nlines, "ncolumns" : ncolumns}
     dejavu = []
