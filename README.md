@@ -1,17 +1,14 @@
 # Projet Labyrinthe
+## Auteurs
 
-<em align="center">AIT BELKACEM Moncef, AMADI Bilal, LABOURET Lucas</em>
+| Nom  | Prénom | Courriel | Groupe | Github |
+| :-------------: | :-------------: | :-------------: | :-------------: | :-------------: |
+| AIT BELKACEM  | Moncef Karim  | moncef.ait-belkacem@universite-paris-saclay.fr  | LDDIM2  |<a href="https://github.com/MK8BK">MK8BK</a>|
+| AMADI | Bilal | bilal.amadi@universite-paris-saclay.fr  | LDDIM2  |<a href="https://github.com/bilaldjoss">bilaldjoss</a>|
+| LABOURET | Lucas | lucas.labouret@universite-paris-saclay.fr  | LDDIM2  |<a href="https://github.com/Lucas-Labouret">Lucas-Labouret</a>|
 
-UE Projet Math-Info ldd-im2 s2
-
-Projet d’informatique effectue au s2 a l’universite paris saclay
+<a href="https://github.com/MK8BK/projet_labyrinthe/blob/master/rapport1.ipynb">Rapport du projet</a>
 
 
-(a modifier plus tard, j'ai pas d'accents, osef)
 
 
-## Sujet
-## Étude théorique du problème
-### Questions  
-## Modélisation et exploration
-## Ouverture
