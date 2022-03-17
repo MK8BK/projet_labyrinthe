@@ -1,13 +1,8 @@
+from copy import deepcopy
+import sys
+
 # -*- coding: utf-8 -*-
 # ---Encoding/decoding---#
-
-def empty_lab(n, m):
-    lab = {"nlines":m, "ncolumns":n}
-    for x in range(n):
-        for y in range(m):
-            lab[(y, x)] = []
-    return lab
-
 
 def encodeLab(tab):
     lab = {}
@@ -97,6 +92,46 @@ def reverse_lab(lab):
         lab[key] = l
     return lab
 
+def empty_lab(n, m):
+    lab = {"nlines":m, "ncolumns":n}
+    for x in range(n):
+        for y in range(m):
+            lab[(y, x)] = []
+    return lab
+
+def canonical_lab(n, m):
+    lab = {"nlines":m, "ncolumns":n}
+    y, x = 0, 0
+    direction = 1
+    lab[(y, x)] = []
+    while True:
+        if 0 <= y+direction and y+direction < m:
+            lab[(y, x)].append((y+direction, x))
+            lab[(y+direction, x)] = [(y, x)]
+            y += direction
+        elif x < n-1:
+            lab[(y, x)].append((y, x+1))
+            lab[(y, x+1)] = [(y, x)]
+            direction = -direction
+            x += 1
+        else:
+            break
+    return lab
+
+def get_deadends(lab):
+    deadends = []
+    for cell in lab.keys():
+        if type(cell) != type("a"):
+            if len(lab[cell]) == 1 and cell != (0, 0):
+                deadends.append(cell)
+    return deadends
+
+def lab_equality(lab1, lab2):
+    if lab1["ncolumns"] != lab1["ncolumns"] or lab1["nlines"] != lab2["nlines"]:
+        return False
+    return all(set(lab1[cell]) == set(lab2[cell]) for cell in lab1.keys() if type(cell) != type("a"))
+
+
 # ---Check---#
 
 def is_well_defined(lab):
@@ -130,7 +165,7 @@ def is_true_lab(lab):
     return True
 
 
-# ---Generation---#
+# ---Generation pseudo-lab---#
 
 def get_bin_list(n, nmax):
     if n == 0:
@@ -204,8 +239,14 @@ def generate_pseudo_lab(ncolumns, nlines):
     
     return labs
 
+
+#--Generation brut-force--#
+
 def generate_lab_bf(ncolumns, nlines):
     return [lab for lab in generate_pseudo_lab(ncolumns, nlines) if is_true_lab(lab)]
+
+
+#--Generation Bilal--#
 
 def genMerge(nlines, ncolumns):
     lab = {"nlines" : nlines, "ncolumns" : ncolumns}
@@ -381,3 +422,24 @@ def generateLab(nlines, ncolumns, method=genExplore):
     return method(nlines, ncolumns)
 
 
+#--Generation Lucas--#
+
+def generate_lab_deadends(ncolumns, nlines):
+    lab = canonical_lab(ncolumns, nlines)
+    res = [lab]
+    return generate_lab_deadends_main(lab, res)
+
+def generate_lab_deadends_main(lab, res):
+    sys.setrecursionlimit(10**6)
+    for deadend in get_deadends(lab):
+        original_path = lab[deadend][0]
+        for adj in adjacent(deadend, size=[lab["nlines"], lab["ncolumns"]]):
+            current = deepcopy(lab)
+            current[original_path].remove(deadend)
+            if adj != original_path:
+                current[deadend] = [adj]
+                current[adj].append(deadend)
+                if all(not lab_equality(current, result) for result in res):
+                    res.append(current)
+                    res = generate_lab_deadends_main(current, res)
+    return res
