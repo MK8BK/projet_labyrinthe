@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from copy import deepcopy
 import sys
 
@@ -36,6 +37,22 @@ def decodeLab(lab):
             if (i, j-1) in lab[(i, j)]:
                 tab[i][j] += 'g'
     return t
+
+
+def nb_murs(lab):
+    n = lab["nlines"]
+    m = lab["ncolumns"]
+    murs_max = n*(m-1) + m*(n-1)
+    non_murs = []
+    for k in lab.keys():
+        if type(k)==str:
+            continue
+        for connect in lab[k]:
+            if [connect,k] in non_murs:
+                continue
+            non_murs.append([k,connect])
+    return murs_max - len(non_murs)
+
 
 
 # ---Misc---#
@@ -240,13 +257,13 @@ def generate_pseudo_lab(ncolumns, nlines):
     return labs
 
 
-#--Generation brut-force--#
+# --Generation brut-force--#
 
 def generate_lab_bf(ncolumns, nlines):
     return [lab for lab in generate_pseudo_lab(ncolumns, nlines) if is_true_lab(lab)]
 
 
-#--Generation Bilal--#
+# --Generation Bilal--#
 
 def genMerge(nlines, ncolumns):
     lab = {"nlines" : nlines, "ncolumns" : ncolumns}
@@ -422,7 +439,7 @@ def generateLab(nlines, ncolumns, method=genExplore):
     return method(nlines, ncolumns)
 
 
-#--Generation Lucas--#
+# --Generation Lucas--#
 
 def generate_lab_deadends(ncolumns, nlines):
     lab = canonical_lab(ncolumns, nlines)
