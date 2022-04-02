@@ -13125,7 +13125,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">PIL.Image</span> <span class="kn">import</span> <span class="nb">open</span>
@@ -13143,7 +13143,7 @@ div#notebook {
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[4]:</div>
+    <div class="prompt output_prompt">Out[3]:</div>
 
 
 
@@ -13475,7 +13475,48 @@ on peut joindre la sortie en rejoignant c et en prenant le second chemin.</p>
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Un pseudo-labyrinthe possédant le bon nombre de murs n'est pas forcément un labyrinthe.</p>
 <p>Par contre-exemple:</p>
-<p><img src="data/3x2/66.png"></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;data/3x2/66.png&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[5]:</div>
+
+
+
+
+<div class="output_png output_subarea output_execute_result">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <p>Pour qu'un pseudo-labyrinthe soit un vrai labyrinthe,</p>
 <ul>
 <li><p>il est nécessaire qu'il ait le bon nombre de murs,</p>
