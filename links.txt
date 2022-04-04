@@ -1,2 +1,3 @@
 https://oeis.org/A001353
 https://en.wikipedia.org/wiki/Spanning_tree
+https://fr.wikipedia.org/wiki/Th%C3%A9or%C3%A8me_de_Kirchhoff
