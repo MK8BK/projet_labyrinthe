@@ -182,6 +182,27 @@ def is_true_lab(lab):
     return True
 
 
+# --Enumération--
+
+def kirchhoff(n, m):
+    full_grid = reverse_lab(empty_lab(n, m))
+    inline_grid = [full_grid[(y,x)] for x in range(n) for y in range(m)]
+    laplace = [[0 for _ in range(n*m)] for _ in range(n*m)]
+    
+    for i in range(len(inline_grid)):
+        for k in range(len(laplace[i])):
+            if i == k:
+                laplace[i][k] = len(inline_grid[i])
+            elif i in [y*n+x for y, x in inline_grid[k]]:
+                laplace[i][k] = -1
+            else:
+                laplace[i][k] = 0
+    return laplace
+
+
+
+
+
 # ---Generation pseudo-lab---#
 
 def get_bin_list(n, nmax):
