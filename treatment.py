@@ -446,8 +446,9 @@ def generate_lab_deadends(ncolumns, nlines):
     res = [lab]
     return generate_lab_deadends_main(lab, res)
 
-def generate_lab_deadends_main(lab, res):
+def generate_lab_deadends_main(lab, res, depth=0):
     sys.setrecursionlimit(10**6)
+    print(depth, end=" | ")
     for deadend in get_deadends(lab):
         original_path = lab[deadend][0]
         for adj in adjacent(deadend, size=[lab["nlines"], lab["ncolumns"]]):
@@ -458,5 +459,5 @@ def generate_lab_deadends_main(lab, res):
                 current[adj].append(deadend)
                 if all(not lab_equality(current, result) for result in res):
                     res.append(current)
-                    res = generate_lab_deadends_main(current, res)
+                    res = generate_lab_deadends_main(current, res, depth+1)
     return res
