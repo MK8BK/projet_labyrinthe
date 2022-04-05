@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import numpy as np
 from copy import deepcopy
 import sys
 
@@ -184,23 +185,23 @@ def is_true_lab(lab):
 
 # --Enumération--
 
-def kirchhoff(n, m):
+def laplace(n, m):
     full_grid = reverse_lab(empty_lab(n, m))
-    inline_grid = [full_grid[(y,x)] for x in range(n) for y in range(m)]
-    laplace = [[0 for _ in range(n*m)] for _ in range(n*m)]
-    
+    inline_grid = [full_grid[(y,x)] for y in range(m) for x in range(n)]
+    l = np.zeros((n*m, n*m)).astype("int64")
     for i in range(len(inline_grid)):
-        for k in range(len(laplace[i])):
+        for k in range(l.shape[1]):
             if i == k:
-                laplace[i][k] = len(inline_grid[i])
+                l[i, k] = len(inline_grid[i])
             elif i in [y*n+x for y, x in inline_grid[k]]:
-                laplace[i][k] = -1
+                l[i, k] = -1
             else:
-                laplace[i][k] = 0
-    return laplace
+                l[i, k] = 0
+    return l
 
-
-
+def kirchhoff(n, m):
+    l = laplace(n,m)[:-1, :-1]
+    return round(np.linalg.det(l))
 
 
 # ---Generation pseudo-lab---#
