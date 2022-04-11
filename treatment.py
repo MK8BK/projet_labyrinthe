@@ -3,10 +3,37 @@ import numpy as np
 from copy import deepcopy
 import sys
 
+# -- Classes --
+
+#class Lab:
+#    def __init__(self, h: str, v: str, m: int, n: int):
+#        self.h = h
+#        self.v = v
+#        self.n = n
+#        self.m = m
+#        self.rep2 = None
+#    def to_rep_dict(self):
+#        self.rep2 = {}
+
 # -*- coding: utf-8 -*-
 # ---Encoding/decoding---#
 
-def encodeLab(tab):
+def encodeLabMatrix(tab):
+    """
+    Transform a nested list of the form
+    [
+        ["g", "db"],
+        ["g", "dh"]
+    ]
+    
+    Into a dict of the form
+    {
+     nlines:   2,
+     ncolumns: 2,
+     (0,0): [(0,1)], (0,1): [(0,0), (1,1)],
+     (1,0): [(1,1)], (1,1): [(1,0), (0,1)]
+    }
+    """
     lab = {}
     for i in range(len(tab)):
         for j in range(len(tab[i])):
@@ -25,10 +52,26 @@ def encodeLab(tab):
     return lab
 
 
-def decodeLab(lab):    
+def decodeLabMatrix(lab):
+    """
+    Transform a dict of the form
+    {
+     nlines:   2,
+     ncolumns: 2,
+     (0,0): [(0,1)], (0,1): [(0,0), (1,1)],
+     (1,0): [(1,1)], (1,1): [(1,0), (0,1)]
+    }
+    
+    Into a nested list of the form
+    [
+        ["g", "db"],
+        ["g", "dh"]
+    ]
+    
+    """
     tab = [["" for j in range(lab["ncolumns"])] for i in range(lab["nlines"])]
-    for i in range(len(t)):
-        for j in range(len(t[i])):
+    for i in range(len(tab)):
+        for j in range(len(tab[i])):
             if (i-1, j) in lab[(i, j)]:
                 tab[i][j] += 'h'
             if (i, j+1) in lab[(i, j)]:
@@ -37,10 +80,29 @@ def decodeLab(lab):
                 tab[i][j] += 'b'
             if (i, j-1) in lab[(i, j)]:
                 tab[i][j] += 'g'
-    return t
+    return tab
 
+def encodeLabInt(lab):
+    ver = ""
+    hor = ""
+    for y in range(lab["nlines"]-1):
+        for x in range(lab["nlines"]-1):
+            if :
+                ver += "0"
+            else:
+                hor += "0"
+    return [ver, hor]
+        
+
+def decodeLabInt:
+    pass
+
+# ---Misc---#
 
 def nb_murs(lab):
+    """
+    Get the number of walls in a given lab
+    """
     n = lab["nlines"]
     m = lab["ncolumns"]
     murs_max = n*(m-1) + m*(n-1)
@@ -54,11 +116,11 @@ def nb_murs(lab):
             non_murs.append([k,connect])
     return murs_max - len(non_murs)
 
-
-
-# ---Misc---#
-
-def adjacent(cell, size=None): #size = [nlines, ncolumns] pour éviter de renvoyer des cellules hors labyrinthe
+def adjacent(cell, size=None):
+    """
+    Return the cooridinates of the cells adjacent to a given cell
+    size: [nlines, ncolumns] to avoid returning out-of-bound coordinates
+    """
     if size==None:
         return [
             (cell[0]-1, cell[1]  ),
@@ -69,6 +131,10 @@ def adjacent(cell, size=None): #size = [nlines, ncolumns] pour éviter de renvoy
     return [adj for adj in adjacent(cell) if (adj[0]>=0 and adj[0]<size[0] and adj[1]>=0 and adj[1]<size[1])]
 
 def get_cell_occurence(lab, cell=(0, 0), previous=None, markList=None):
+    """
+    Return 2d matrix of integers where the cell (y, x) contain the number of paths through which the cell (y, x) of a the given lab is accessible from the cell (0, 0)
+    A labyrinth is valid iff the matrix only contains "1"'s
+    """
     if markList == None:
         markList = [[0 for j in range(lab["ncolumns"])] for i in range(lab["nlines"])]
     y, x = cell[0], cell[1]
@@ -81,6 +147,9 @@ def get_cell_occurence(lab, cell=(0, 0), previous=None, markList=None):
     return markList
 
 def merge_labs(lab1, lab2):
+    """
+    Takes two labs merge them, returning a lab containing all the walls from lab1 and lab2
+    """
     lab = {}
 
     lab["ncolumns"] = max(lab1["ncolumns"], lab2["ncolumns"])
@@ -100,6 +169,9 @@ def merge_labs(lab1, lab2):
     return lab
 
 def reverse_lab(lab):
+    """
+    
+    """
     for key in lab.keys():
         if type(key) == type("a"):
             continue
@@ -111,6 +183,9 @@ def reverse_lab(lab):
     return lab
 
 def empty_lab(n, m):
+    """
+    Return a lab of size n*m with no connection between any cell
+    """
     lab = {"nlines":m, "ncolumns":n}
     for x in range(n):
         for y in range(m):
@@ -118,6 +193,9 @@ def empty_lab(n, m):
     return lab
 
 def canonical_lab(n, m):
+    """
+    Return an obvious lab of size n*m
+    """
     lab = {"nlines":m, "ncolumns":n}
     y, x = 0, 0
     direction = 1
@@ -137,6 +215,9 @@ def canonical_lab(n, m):
     return lab
 
 def get_deadends(lab):
+    """
+    Return a list of all the dead-ends in a given lab
+    """
     deadends = []
     for cell in lab.keys():
         if type(cell) != type("a"):
@@ -145,6 +226,9 @@ def get_deadends(lab):
     return deadends
 
 def lab_equality(lab1, lab2):
+    """
+    Check if two labs are identical
+    """
     if lab1["ncolumns"] != lab1["ncolumns"] or lab1["nlines"] != lab2["nlines"]:
         return False
     return all(set(lab1[cell]) == set(lab2[cell]) for cell in lab1.keys() if type(cell) != type("a"))
@@ -153,6 +237,12 @@ def lab_equality(lab1, lab2):
 # ---Check---#
 
 def is_well_defined(lab):
+    """
+    Check if a lab is a lab is well defined:
+    - All cells of the lab exist
+    - No cell that is out of bound exist that are out of bound
+    - No cell is connected to a non-adjacent cell
+    """
     keys = lab.keys()
 
     ymax, xmax = 0, 0
@@ -176,6 +266,11 @@ def is_well_defined(lab):
     return True
 
 def is_true_lab(lab):
+    """
+    Check if a lab is valid
+    - It is connex
+    - It doesn't contains loops
+    """
     for line in get_cell_occurence(lab):
         for cell in line:
             if cell !=1:
@@ -186,6 +281,10 @@ def is_true_lab(lab):
 # --Enumération--
 
 def laplace(n, m):
+    """
+    Return the Laplacian Matrix assciated to the lab
+    (see https://fr.wikipedia.org/wiki/Th%C3%A9or%C3%A8me_de_Kirchhoff)
+    """
     full_grid = reverse_lab(empty_lab(n, m))
     inline_grid = [full_grid[(y,x)] for y in range(m) for x in range(n)]
     l = np.zeros((n*m, n*m)).astype("int64")
@@ -200,6 +299,9 @@ def laplace(n, m):
     return l
 
 def kirchhoff(n, m):
+    """
+    Return the number of labs of size n*m
+    """
     l = laplace(n,m)[:-1, :-1]
     return round(np.linalg.det(l))
 
