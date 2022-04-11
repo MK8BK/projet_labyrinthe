@@ -82,7 +82,7 @@ def decodeLabMatrix(lab):
             if (i, j-1) in lab[(i, j)]:
                 tab[i][j] += 'g'
     return tab
-
+"""
 def encodeLabInt(lab):
     ver = ""
     hor = ""
@@ -97,7 +97,7 @@ def encodeLabInt(lab):
 
 def decodeLabInt:
     pass
-
+"""
 # ---Misc---#
 
 def nb_murs(lab):
@@ -171,7 +171,7 @@ def merge_labs(lab1, lab2):
 
 def reverse_lab(lab):
     """
-    
+    Replace each connection by a wall and each wall by a connection in a given lab
     """
     for key in lab.keys():
         if type(key) == type("a"):
@@ -310,6 +310,10 @@ def kirchhoff(n, m):
 # ---Generation pseudo-lab---#
 
 def get_bin_list(n, nmax):
+    """
+    return a list of digits of the binary rep of n
+    nmax is the maximum theoretical value of n, used to add 0 at the front of the list if necessary
+    """
     if n == 0:
         return [0 for _ in range(len(bin(nmax))-3)]
     n = bin(n)
@@ -323,6 +327,9 @@ def get_bin_list(n, nmax):
             
 
 def generate_pseudo_lab(ncolumns, nlines):
+    """
+    Generate the list of pseudo-labs of size n*m
+    """
     nb_ver_walls = 2 ** ((ncolumns-1)*nlines)
     nb_hor_walls = 2 ** (nlines*(ncolumns-1))
     
@@ -385,6 +392,9 @@ def generate_pseudo_lab(ncolumns, nlines):
 # --Generation brut-force--#
 
 def generate_lab_bf(ncolumns, nlines):
+    """
+    generate the list of all n*m labs by checking for each pseudo-lab if it is a true pseud-lab
+    """
     return [lab for lab in generate_pseudo_lab(ncolumns, nlines) if is_true_lab(lab)]
 
 
@@ -567,6 +577,9 @@ def generateLab(nlines, ncolumns, method=genExplore):
 # --Generation Lucas--#
 
 def generate_lab_deadends(ncolumns, nlines):
+    """
+    Recursively generate the list of all n*m labs
+    """
     lab = canonical_lab(ncolumns, nlines)
     res = [lab]
     return generate_lab_deadends_main(lab, res)
@@ -582,7 +595,7 @@ def generate_lab_deadends_main(lab, res, depth=0):
                 current[deadend] = [adj]
                 current[adj].append(deadend)
                 prev_len = len(res)
-                res.add(current)
-                if len(res) != prev_len:
+                if all(not lab_equality(current, other) for other in res):
+                    res.append(current)
                     res = generate_lab_deadends_main(current, res, depth+1)
-    return res
+    return list(res)
