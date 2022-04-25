@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+import random
 from copy import deepcopy
 import sys
 
@@ -574,7 +575,64 @@ def generateLab(nlines, ncolumns, method=genExplore):
     return method(nlines, ncolumns)
 
 
-# --Generation Lucas--#
+# --Generation Random-- #
+
+def unvisited_cells(marks):
+    m = len(marks)
+    n = len(marks[0])
+    l = []
+    for y in range(m):
+        for x in range(n):
+            if not marks[y][x]:
+                l.append((y, x))
+    return l
+
+def add_path(lab, path, marks):
+    cell = path.pop()
+    while len(path):
+        marks[cell[0]][cell[1]] = True
+        next_cell = path.pop()
+        lab[cell].append(next_cell)
+        lab[next_cell] = [cell]
+        cell = next_cell
+    marks[cell[0]][cell[1]] = True
+    return lab
+
+def loop_erased_path(start, marks):
+    shape = (len(marks), len(marks[0]))
+    path = [start]
+    
+    while True:
+        neighbourghs = adjacent(path[-1], shape)
+        cell = neighbourghs[random.randint(0, len(neighbourghs)-1)]
+        
+        if cell in path:
+            while path.pop() != cell:
+                pass
+        path.append(cell)
+        
+        if marks[cell[0]][cell[1]]:
+            return path
+    
+def wilson_routine(lab, marks):
+    while not all(all(mark) for mark in marks):
+        unvisited = unvisited_cells(marks)
+        start = unvisited[random.randint(0, len(unvisited)-1)]
+        path = loop_erased_path(start, marks)
+        add_path(lab, path, marks)
+    return lab
+
+def wilson_generation(n, m):
+    lab = {"nlines": m, "ncolumns": n}
+    marks = [[False for _ in range(n)] for _ in range(m)]
+    y = random.randint(0, m-1)
+    x = random.randint(0, n-1)
+    marks[y][x] = True
+    lab[(y, x)] = []
+    return wilson_routine(lab, marks)
+
+
+# --Generation Lucas-- #
 
 def generate_lab_deadends(ncolumns, nlines):
     """
@@ -584,8 +642,7 @@ def generate_lab_deadends(ncolumns, nlines):
     res = [lab]
     return generate_lab_deadends_main(lab, res)
 
-def generate_lab_deadends_main(lab, res, depth=0):
-    print(depth, end=" | ")
+def generate_lab_deadends_main(lab, res):
     for deadend in get_deadends(lab):
         original_path = lab[deadend][0]
         for adj in adjacent(deadend, size=[lab["nlines"], lab["ncolumns"]]):
@@ -597,5 +654,5 @@ def generate_lab_deadends_main(lab, res, depth=0):
                 prev_len = len(res)
                 if all(not lab_equality(current, other) for other in res):
                     res.append(current)
-                    res = generate_lab_deadends_main(current, res, depth+1)
+                    res = generate_lab_deadends_main(current, res)
     return list(res)
