@@ -1,26 +1,11 @@
-# -*- coding: utf-8 -*-
 import numpy as np
 import random
 from copy import deepcopy
 import sys
 
-# -- Classes --
 
-#class Lab:
-#    def __init__(self, h: str, v: str, m: int, n: int):
-#        self.h = h
-#        self.v = v
-#        self.n = n
-#        self.m = m
-#        self.rep2 = None
-#    def to_rep_dict(self):
-#        self.rep2 = {}
-
-
-# -*- coding: utf-8 -*-
-# ---Encoding/decoding---#
-
-def encodeLabMatrix(tab):
+# Encoding
+def encodeLab(tab):
     """
     Transform a nested list of the form
     [
@@ -53,8 +38,8 @@ def encodeLabMatrix(tab):
     lab["ncolumns"] = len(tab[0])
     return lab
 
-
-def decodeLabMatrix(lab):
+# Decoding
+def decodeLab(lab):
     """
     Transform a dict of the form
     {
@@ -83,23 +68,6 @@ def decodeLabMatrix(lab):
             if (i, j-1) in lab[(i, j)]:
                 tab[i][j] += 'g'
     return tab
-"""
-def encodeLabInt(lab):
-    ver = ""
-    hor = ""
-    for y in range(lab["nlines"]-1):
-        for x in range(lab["nlines"]-1):
-            if :
-                ver += "0"
-            else:
-                hor += "0"
-    return [ver, hor]
-        
-
-def decodeLabInt:
-    pass
-"""
-# ---Misc---#
 
 def nb_murs(lab):
     """
@@ -197,6 +165,7 @@ def empty_lab(n, m):
 def canonical_lab(n, m):
     """
     Return an obvious lab of size n*m
+        (Canonical)
     """
     lab = {"nlines":m, "ncolumns":n}
     y, x = 0, 0
@@ -235,14 +204,11 @@ def lab_equality(lab1, lab2):
         return False
     return all(set(lab1[cell]) == set(lab2[cell]) for cell in lab1.keys() if type(cell) != type("a"))
 
-
-# ---Check---#
-
 def is_well_defined(lab):
     """
-    Check if a lab is a lab is well defined:
+    Check if a lab is well defined:
     - All cells of the lab exist
-    - No cell that is out of bound exist that are out of bound
+    - All cells are inbound
     - No cell is connected to a non-adjacent cell
     """
     keys = lab.keys()
@@ -271,14 +237,13 @@ def is_true_lab(lab):
     """
     Check if a lab is valid
     - It is connex
-    - It doesn't contains loops
+    - It doesn't contain loops
     """
     for line in get_cell_occurence(lab):
         for cell in line:
             if cell !=1:
                 return False
     return True
-
 
 # --Enumération--
 
@@ -312,7 +277,7 @@ def kirchhoff(n, m):
 
 def get_bin_list(n, nmax):
     """
-    return a list of digits of the binary rep of n
+    return a list of digits of the binary representation of n
     nmax is the maximum theoretical value of n, used to add 0 at the front of the list if necessary
     """
     if n == 0:
@@ -390,8 +355,8 @@ def generate_pseudo_lab(ncolumns, nlines):
     return labs
 
 
-# --Generation brut-force--#
 
+# --Generation brut-force--#
 def generate_lab_bf(ncolumns, nlines):
     """
     generate the list of all n*m labs by checking for each pseudo-lab if it is a true pseud-lab
@@ -400,6 +365,95 @@ def generate_lab_bf(ncolumns, nlines):
 
 
 # --Generation Bilal--#
+
+
+
+# --Generation Random-- #
+
+def unvisited_cells(marks):
+    m = len(marks)
+    n = len(marks[0])
+    l = []
+    for y in range(m):
+        for x in range(n):
+            if not marks[y][x]:
+                l.append((y, x))
+    return l
+
+def add_path(lab, path, marks):
+    cell = path.pop()
+    while len(path):
+        marks[cell[0]][cell[1]] = True
+        next_cell = path.pop()
+        lab[cell].append(next_cell)
+        lab[next_cell] = [cell]
+        cell = next_cell
+    marks[cell[0]][cell[1]] = True
+    return lab
+
+def loop_erased_path(start, marks):
+    shape = (len(marks), len(marks[0]))
+    path = [start]
+    
+    while True:
+        neighbourghs = adjacent(path[-1], shape)
+        cell = neighbourghs[random.randint(0, len(neighbourghs)-1)]
+        
+        if cell in path:
+            while path.pop() != cell:
+                pass
+        path.append(cell)
+        
+        if marks[cell[0]][cell[1]]:
+            return path
+    
+def wilson_routine(lab, marks):
+    while not all(all(mark) for mark in marks):
+        unvisited = unvisited_cells(marks)
+        start = unvisited[random.randint(0, len(unvisited)-1)]
+        path = loop_erased_path(start, marks)
+        add_path(lab, path, marks)
+    return lab
+
+def wilson_generation(n, m):
+    lab = {"nlines": m, "ncolumns": n}
+    marks = [[False for _ in range(n)] for _ in range(m)]
+    y = random.randint(0, m-1)
+    x = random.randint(0, n-1)
+    marks[y][x] = True
+    lab[(y, x)] = []
+    return wilson_routine(lab, marks)
+
+
+# --Generation Lucas-- #
+
+def generate_lab_deadends_routine(lab, res):
+    stack = [lab]
+    while len(stack)>0:
+        lab = stack.pop()
+        for deadend in get_deadends(lab):
+            original_path = lab[deadend][0]
+            for adj in adjacent(deadend, size=[lab["nlines"], lab["ncolumns"]]):
+                current = deepcopy(lab)
+                current[original_path].remove(deadend)
+                if adj != original_path:
+                    current[deadend] = [adj]
+                    current[adj].append(deadend)
+                    prev_len = len(res)
+                    if all(not lab_equality(current, other) for other in res):
+                        res.append(current)
+                        stack.append(current)
+    return res
+
+def generate_lab_deadends(ncolumns, nlines):
+    """
+    Recursively generate the list of all n*m labs
+    """
+    lab = canonical_lab(ncolumns, nlines)
+    res = [lab]
+    return generate_lab_deadends_routine(lab, res)
+
+# generation bilal
 
 def genMerge(nlines, ncolumns):
     lab = {"nlines" : nlines, "ncolumns" : ncolumns}
@@ -575,84 +629,6 @@ def generateLab(nlines, ncolumns, method=genExplore):
     return method(nlines, ncolumns)
 
 
-# --Generation Random-- #
 
-def unvisited_cells(marks):
-    m = len(marks)
-    n = len(marks[0])
-    l = []
-    for y in range(m):
-        for x in range(n):
-            if not marks[y][x]:
-                l.append((y, x))
-    return l
-
-def add_path(lab, path, marks):
-    cell = path.pop()
-    while len(path):
-        marks[cell[0]][cell[1]] = True
-        next_cell = path.pop()
-        lab[cell].append(next_cell)
-        lab[next_cell] = [cell]
-        cell = next_cell
-    marks[cell[0]][cell[1]] = True
-    return lab
-
-def loop_erased_path(start, marks):
-    shape = (len(marks), len(marks[0]))
-    path = [start]
-    
-    while True:
-        neighbourghs = adjacent(path[-1], shape)
-        cell = neighbourghs[random.randint(0, len(neighbourghs)-1)]
-        
-        if cell in path:
-            while path.pop() != cell:
-                pass
-        path.append(cell)
-        
-        if marks[cell[0]][cell[1]]:
-            return path
-    
-def wilson_routine(lab, marks):
-    while not all(all(mark) for mark in marks):
-        unvisited = unvisited_cells(marks)
-        start = unvisited[random.randint(0, len(unvisited)-1)]
-        path = loop_erased_path(start, marks)
-        add_path(lab, path, marks)
-    return lab
-
-def wilson_generation(n, m):
-    lab = {"nlines": m, "ncolumns": n}
-    marks = [[False for _ in range(n)] for _ in range(m)]
-    y = random.randint(0, m-1)
-    x = random.randint(0, n-1)
-    marks[y][x] = True
-    lab[(y, x)] = []
-    return wilson_routine(lab, marks)
-
-
-# --Generation Lucas-- #
-
-def generate_lab_deadends(ncolumns, nlines):
-    """
-    Recursively generate the list of all n*m labs
-    """
-    lab = canonical_lab(ncolumns, nlines)
-    res = [lab]
-    return generate_lab_deadends_main(lab, res)
-
-def generate_lab_deadends_main(lab, res):
-    for deadend in get_deadends(lab):
-        original_path = lab[deadend][0]
-        for adj in adjacent(deadend, size=[lab["nlines"], lab["ncolumns"]]):
-            current = deepcopy(lab)
-            current[original_path].remove(deadend)
-            if adj != original_path:
-                current[deadend] = [adj]
-                current[adj].append(deadend)
-                prev_len = len(res)
-                if all(not lab_equality(current, other) for other in res):
-                    res.append(current)
-                    res = generate_lab_deadends_main(current, res)
-    return list(res)
+if __name__ == '__main__':
+    print(len(generate_lab_deadends(3,4)))
