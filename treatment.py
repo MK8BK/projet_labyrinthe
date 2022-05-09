@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import matplotlib.pyplot as plt
 from copy import deepcopy
 import sys
 
@@ -99,6 +100,24 @@ def adjacent(cell, size=None):
             (cell[0]  , cell[1]+1)
         ]
     return [adj for adj in adjacent(cell) if (adj[0]>=0 and adj[0]<size[0] and adj[1]>=0 and adj[1]<size[1])]
+
+def get_wall(c1, c2, height):
+    """
+    Revoie les coordonnées du mur entre les cases c1 et c2 d'un labyrinthe
+    """
+    if c1[0] == c2[0]: #Mur vertical
+        x1 = int( (c1[1]+c2[1]+1)/2 )
+        x2 = x1
+        y1 = int( height - c1[0] )
+        y2 = y1 - 1
+        return ((x1, x2), (y1, y2))
+
+    if c1[1] == c2[1]: #Mur horizontal
+        x1 = int( c1[1] )
+        x2 = x1 + 1
+        y1 = int( height - (c1[0]+c2[0]+1)/2 )
+        y2 = y1
+        return ((x1, x2), (y1, y2))
 
 def get_cell_occurence(lab, cell=(0, 0), previous=None, markList=None):
     """
@@ -240,9 +259,8 @@ def is_true_lab(lab):
     - It doesn't contain loops
     """
     for line in get_cell_occurence(lab):
-        for cell in line:
-            if cell !=1:
-                return False
+        if sum(line)!=len(line):
+            return False
     return True
 
 # --Enumération--
@@ -273,6 +291,36 @@ def kirchhoff(n, m):
     return round(np.linalg.det(l))
 
 
+
+def show_lab(ax, lab):
+    """
+    Affiche un labyrinthe lab donné dans un plote matplotlib
+    """
+    walls = []
+    for key in [k for k in lab.keys() if type(k)!=type(' ')]:
+        for cell in adjacent(key):
+            if cell not in lab[key]:
+                walls.append(get_wall(cell, key, lab["nlines"]))
+    for wall in walls:
+        ax.plot(wall[0], wall[1])
+    return ax
+def show_graph(ax,lab):
+    lines = []
+    rows = lab["nlines"]
+    cols = lab["ncolumns"]
+    for node, edges in lab.items():
+        if type(node)==str:
+            continue
+
+        nodx = rows - node[0] -0.5
+        nody = node[1]+0.5
+        ax.scatter([nody],[nodx], marker=".", s=100, color = "black")
+        for edge in edges:
+            nodeadjx = rows - edge[0] - 0.5
+            nodeadjy = edge[1] + 0.5
+            ax.plot([nody, nodeadjy],[nodx, nodeadjx], color="black")
+    
+    return ax
 # ---Generation pseudo-lab---#
 
 def get_bin_list(n, nmax):
